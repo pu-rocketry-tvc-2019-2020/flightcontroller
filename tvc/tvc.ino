@@ -182,6 +182,8 @@ void loop() {
     fix = gps.read();
   }
 
+  serialprint();
+  sdprint();
   myFile.close();
   
 }
