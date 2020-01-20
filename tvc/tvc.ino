@@ -6,10 +6,13 @@
 #include <SD.h>
 #include <SPI.h>
 
+
+// -- GPS --
 static NMEAGPS gps;
 static gps_fix  fix;
-Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
+// -- BNO055 --
+Adafruit_BNO055 bno = Adafruit_BNO055(55);
 imu::Vector<3> euler;
 imu::Vector<3> gyro;
 imu::Vector<3> accel;
@@ -18,172 +21,115 @@ imu::Vector<3> grav;
 imu::Vector<3> mag;
 int8_t temp;
 
-// SD card vars
+// -- SD --
+#define LOGNAME "log.txt"
 File myFile;
-
-// change this to match your SD shield or module;
-// Arduino Ethernet shield: pin 4
-// Adafruit SD shields and modules: pin 10
-// Sparkfun SD shield: pin 8
-// Teensy audio board: pin 10
-// Teensy 3.5 & 3.6 on-board: BUILTIN_SDCARD
-// Wiz820+SD board: pin 4
-// Teensy 2.0: pin 0
-// Teensy++ 2.0: pin 20
+/* change this to match your SD shield or module
+  Arduino Ethernet shield: pin 4
+  Adafruit SD shields and modules: pin 10
+  Sparkfun SD shield: pin 8
+  Teensy audio board: pin 10
+  Teensy 3.5 & 3.6 on-board: BUILTIN_SDCARD
+  Wiz820+SD board: pin 4
+  Teensy 2.0: pin 0
+  Teensy++ 2.0: pin 20 */
 const int chipSelect = 4;
+// text buffers
+char eulerbuf[64];
+char gyrobuf[64];
+char accelbuf[64];
+char linaccbuf[64];
+char gravbuf[64];
+char magbuf[64];
+char tempbuf[64];
+char gpsbuf[64];
 
+// Writes all variables to buffers
+void writebuf(){
+  sprintf(eulerbuf, "Euler: %d %d %d", euler.x(), euler.y(), euler.z());
+  sprintf(gyrobuf, "Gyroscope: %d %d %d", gyro.x(), gyro.y(), gyro.z());
+  sprintf(accelbuf, "Accelerometer: %d %d %d", accel.x(), accel.y(), accel.z());
+  sprintf(linaccbuf, "Linear Accel: %d %d %d", linacc.x(), linacc.y(), linacc.z());
+  sprintf(gravbuf, "Gravity: %d %d %d", grav.x(), grav.y(), grav.z());
+  sprintf(magbuf, "Magnetometer: %d %d %d", mag.x(), mag.y(), mag.z());
+  sprintf(tempbuf, "Temperature: %d", temp);
+  sprintf(gpsbuf, "Longitude: %d, Latitude: %d, Altitude: %d",fix.longitude(), fix.latitude(), fix.altitude_cm());
+}
+
+// Prints all buffers to Serial 
 void serialprint() {
-  // euler
-  Serial.print("Euler: ");
-  Serial.print(euler.x());
-  Serial.print(" ");
-  Serial.print(euler.y());
-  Serial.print(" ");
-  Serial.println(euler.z());
-  // gyro
-  Serial.print("Gyroscope: ");
-  Serial.print(gyro.x());
-  Serial.print(" ");
-  Serial.print(gyro.y());
-  Serial.print(" ");
-  Serial.println(gyro.z());
-  // accel
-  Serial.print("Accelerometer: ");
-  Serial.print(accel.x());
-  Serial.print(" ");
-  Serial.print(accel.y());
-  Serial.print(" ");
-  Serial.println(accel.z());
-  // linacc
-  Serial.print("Linear Accel: ");
-  Serial.print(linacc.x());
-  Serial.print(" ");
-  Serial.print(linacc.y());
-  Serial.print(" ");
-  Serial.println(linacc.z());
-  // grav
-  Serial.print("Gravity: ");
-  Serial.print(grav.x());
-  Serial.print(" ");
-  Serial.print(grav.y());
-  Serial.print(" ");
-  Serial.println(grav.z());
-  // mag
-  Serial.print("Magnetometer: ");
-  Serial.print(mag.x());
-  Serial.print(" ");
-  Serial.print(mag.y());
-  Serial.print(" ");
-  Serial.println(mag.z());
-  // temp
-  Serial.println("Temperature: " + temp);
-  // GPS
-  Serial.print("Longitude: ");
-  Serial.println(fix.longitude());
-  Serial.print("Latitude: ");
-  Serial.println(fix.latitude());
-  Serial.print("Altitude: ");
-  Serial.println(fix.altitude_cm());
+  Serial.println(eulerbuf);
+  Serial.println(gyrobuf);
+  Serial.println(accelbuf);
+  Serial.println(linaccbuf);
+  Serial.println(gravbuf);
+  Serial.println(magbuf);
+  Serial.println(tempbuf);
+  Serial.println(gpsbuf);
 }
 
+// Prints all buffers to SD
 void sdprint() {
-  // euler
-  myFile.print("Euler: ");
-  myFile.print(euler.x());
-  myFile.print(" ");
-  myFile.print(euler.y());
-  myFile.print(" ");
-  myFile.println(euler.z());
-  // gyro
-  myFile.print("Gyroscope: ");
-  myFile.print(gyro.x());
-  myFile.print(" ");
-  myFile.print(gyro.y());
-  myFile.print(" ");
-  myFile.println(gyro.z());
-  // accel
-  myFile.print("Accelerometer: ");
-  myFile.print(accel.x());
-  myFile.print(" ");
-  myFile.print(accel.y());
-  myFile.print(" ");
-  myFile.println(accel.z());
-  // linacc
-  myFile.print("Linear Accel: ");
-  myFile.print(linacc.x());
-  myFile.print(" ");
-  myFile.print(linacc.y());
-  myFile.print(" ");
-  myFile.println(linacc.z());
-  // grav
-  myFile.print("Gravity: ");
-  myFile.print(grav.x());
-  myFile.print(" ");
-  myFile.print(grav.y());
-  myFile.print(" ");
-  myFile.println(grav.z());
-  // mag
-  myFile.print("Magnetometer: ");
-  myFile.print(mag.x());
-  myFile.print(" ");
-  myFile.print(mag.y());
-  myFile.print(" ");
-  myFile.println(mag.z());
-  // temp
-  myFile.println("Temperature: " + temp);
-  // GPS
-  myFile.print("Longitude: ");
-  myFile.println(fix.longitude());
-  myFile.print("Latitude: ");
-  myFile.println(fix.latitude());
-  myFile.print("Altitude: ");
-  myFile.println(fix.altitude_cm());
+  // print data
+  myFile.println(eulerbuf);
+  myFile.println(gyrobuf);
+  myFile.println(accelbuf);
+  myFile.println(linaccbuf);
+  myFile.println(gravbuf);
+  myFile.println(magbuf);
+  myFile.println(tempbuf);
+  myFile.println(gpsbuf);
 }
+
+
 
 void setup() {
-  // set data rate for ports
+  // Serial
   Serial.begin(9600);
-  gpsPort.begin(9600);  // Serial1
+
+  // GPS - Serial1
+  if(!gpsPort.begin(9600)){
+    Serial.print("No GPS detected on Serial 1.");
+    while(1);
+  }
 
   // IMU
   if (!bno.begin()) {
     Serial.print("No BNO055 detected.");
     while(1);
   }
-
-  delay(1000);
-    
+  delay(1000); 
   bno.setExtCrystalUse(true);
 
+  // SD
   if (!SD.begin(chipSelect)) {
-    Serial.println("SD initialization failed!");
+    Serial.println("SD initialization failed");
     return;
   }
+  File myFile = SD.open(LOGNAME, FILE_WRITE);
   Serial.println("SD initialization done.");
-
-  myFile = SD.open("data.txt", FILE_WRITE);
   
+  Serial.println("Setup done.");
 }
 
 void loop() {
-  // IMU
+  // BNO055 - IMU and temperature
   sensors_event_t event; 
   bno.getEvent(&event);
-
   euler   = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
   gyro    = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
   accel   = bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
   linacc  = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
   grav    = bno.getVector(Adafruit_BNO055::VECTOR_GRAVITY);
   mag     = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
-  temp = bno.getTemp();
+  temp    = bno.getTemp();
 
+  // GPS
   if (gps.available( gpsPort )) {
     fix = gps.read();
   }
 
+  writebuf();
   serialprint();
-  sdprint();
-  myFile.close();
-  
+  sdprint();  
 }
