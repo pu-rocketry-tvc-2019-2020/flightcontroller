@@ -24,16 +24,7 @@ int8_t temp;
 // -- SD --
 #define LOGNAME "log.txt"
 File myFile;
-/* change this to match your SD shield or module
-  Arduino Ethernet shield: pin 4
-  Adafruit SD shields and modules: pin 10
-  Sparkfun SD shield: pin 8
-  Teensy audio board: pin 10
-  Teensy 3.5 & 3.6 on-board: BUILTIN_SDCARD
-  Wiz820+SD board: pin 4
-  Teensy 2.0: pin 0
-  Teensy++ 2.0: pin 20 */
-const int chipSelect = 4;
+const int chipSelect = BUILTIN_SDCARD;
 // text buffers
 char eulerbuf[64];
 char gyrobuf[64];
@@ -80,7 +71,6 @@ void sdprint() {
   myFile.println(tempbuf);
   myFile.println(gpsbuf);
 }
-
 
 
 void setup() {
