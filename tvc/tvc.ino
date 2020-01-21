@@ -9,7 +9,7 @@
 
 // -- GPS --
 static NMEAGPS gps;
-static gps_fix  fix;
+static gps_fix fix;
 
 // -- BNO055 --
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
@@ -37,14 +37,14 @@ char gpsbuf[64];
 
 // Writes all variables to buffers
 void writebuf(){
-  sprintf(eulerbuf, "Euler: %d %d %d", euler.x(), euler.y(), euler.z());
-  sprintf(gyrobuf, "Gyroscope: %d %d %d", gyro.x(), gyro.y(), gyro.z());
-  sprintf(accelbuf, "Accelerometer: %d %d %d", accel.x(), accel.y(), accel.z());
-  sprintf(linaccbuf, "Linear Accel: %d %d %d", linacc.x(), linacc.y(), linacc.z());
-  sprintf(gravbuf, "Gravity: %d %d %d", grav.x(), grav.y(), grav.z());
-  sprintf(magbuf, "Magnetometer: %d %d %d", mag.x(), mag.y(), mag.z());
+  sprintf(eulerbuf, "Euler: %e %e %e", euler.x(), euler.y(), euler.z());
+  sprintf(gyrobuf, "Gyroscope: %e %e %e", gyro.x(), gyro.y(), gyro.z());
+  sprintf(accelbuf, "Accelerometer: %e %e %e", accel.x(), accel.y(), accel.z());
+  sprintf(linaccbuf, "Linear Accel: %e %e %e", linacc.x(), linacc.y(), linacc.z());
+  sprintf(gravbuf, "Gravity: %e %e %e", grav.x(), grav.y(), grav.z());
+  sprintf(magbuf, "Magnetometer: %e %e %e", mag.x(), mag.y(), mag.z());
   sprintf(tempbuf, "Temperature: %d", temp);
-  sprintf(gpsbuf, "Longitude: %d, Latitude: %d, Altitude: %d",fix.longitude(), fix.latitude(), fix.altitude_cm());
+  sprintf(gpsbuf, "Longitude: %e, Latitude: %e, Altitude: %ld",fix.longitude(), fix.latitude(), fix.altitude_cm());
 }
 
 // Prints all buffers to Serial 
@@ -78,10 +78,7 @@ void setup() {
   Serial.begin(9600);
 
   // GPS - Serial1
-  if(!gpsPort.begin(9600)){
-    Serial.print("No GPS detected on Serial 1.");
-    while(1);
-  }
+  gpsPort.begin(9600);
 
   // IMU
   if (!bno.begin()) {
