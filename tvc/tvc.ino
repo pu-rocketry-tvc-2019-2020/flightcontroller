@@ -12,7 +12,7 @@ static NMEAGPS gps;
 static gps_fix fix;
 
 // -- BNO055 --
-Adafruit_BNO055 bno = Adafruit_BNO055(55);
+Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28);
 imu::Vector<3> euler;
 imu::Vector<3> gyro;
 imu::Vector<3> accel;
@@ -80,6 +80,8 @@ void setup() {
   // GPS - Serial1
   gpsPort.begin(9600);
 
+
+
   // IMU
   if (!bno.begin()) {
     Serial.print("No BNO055 detected.");
@@ -95,7 +97,7 @@ void setup() {
   }
   File myFile = SD.open(LOGNAME, FILE_WRITE);
   Serial.println("SD initialization done.");
-  
+  delay(1000);
   Serial.println("Setup done.");
 }
 
@@ -112,11 +114,15 @@ void loop() {
   temp    = bno.getTemp();
 
   // GPS
+  long currentime = millis();
+  while(!gps.available( gpsPort )){}
   if (gps.available( gpsPort )) {
     fix = gps.read();
+    trace_all( Serial, gps, fix );
+    Serial.println(millis()-currentime);
   }
 
   writebuf();
   serialprint();
-  sdprint();  
+  sdprint(); 
 }
